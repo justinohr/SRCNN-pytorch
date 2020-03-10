@@ -26,6 +26,7 @@ def generate_data(mode):
 		Y = []
 		for i in range(BATCH_SIZE):
 			img = Image.open('./SR_dataset/91/' + random.choice(training_file))
+			img = img.convert('L')
 			img = train_transform(img)
 
 			flawed = img.resize((16,16))
@@ -40,19 +41,22 @@ def generate_data(mode):
 		Y = []
 		for file in testing_file:
 			img = Image.open('./SR_dataset/Set5/' + file)
+			img = img.convert('L')
 			X.append(transforms.ToTensor()(img))
 
 			flawed = img.resize((int(img.size[0]/2), int(img.size[1]/2)))
 			flawed = flawed.resize(img.size, Image.BICUBIC)
-			Y.append(transforms.ToTensor()(img))
+			Y.append(transforms.ToTensor()(flawed))
 		return (X,Y)
 
 def main():
-	config = [(64, 9, 1, 4), (32, 1, 1, 0), (3, 5, 1, 2)]
+	config = [(64, 3, 1, 1), (64, 3, 1, 1), (1, 3, 1, 1)]
+	#config = [(64, 9, 1, 4), (32, 1, 1, 0), (3, 5, 1, 2)]
 	#config = [(64, 9, 1, 0), (32, 1, 1, 0), (3, 5, 1, 0)]
+	# config: (output_ch, kernel_size, stride, padding_size)
 	model = SRCNN(config).to(DEVICE)
-	loss_function = nn.MSELoss(reduction='sum')
-	optimizer = optim.Adam(model.parameters())
+	loss_function = nn.MSELoss(reduction='mean')
+	optimizer = optim.Adam(model.parameters(), lr=0.0001)
 	test_data = generate_data('test')
 	for epoch in range(EPOCH):
 		train_data = generate_data('train')

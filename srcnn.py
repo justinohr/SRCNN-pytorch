@@ -12,7 +12,8 @@ class SRCNN(nn.Module):
 
 	def _make_layers(self, config):
 		layers = []
-		ch_in = 3
+		#ch_in = 3
+		ch_in = 1
 		for x in config:
 			ch_out, k, s, p = x
 			layers += [nn.Conv2d(ch_in, ch_out,
